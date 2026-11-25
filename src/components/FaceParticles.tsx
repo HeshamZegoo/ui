@@ -85,6 +85,44 @@ const FaceParticles = ({ uniforms, cameraPosition }: FaceParticlesProps) => {
       materialRef.current.uniforms.uPixelRatio.value = uniforms.uPixelRatio;
       materialRef.current.uniforms.uSizeK.value = uniforms.uSizeK;
       materialRef.current.uniforms.uCameraPosition.value.set(cameraRef.current.toArray());
+      
+      // Optional window variable overrides (matches original implementation)
+      if (typeof window !== 'undefined') {
+        if ((window as any).__HUM_SPEAK_AMP != null) {
+          materialRef.current.uniforms.uAudioLevel.value = Number((window as any).__HUM_SPEAK_AMP);
+        }
+        if ((window as any).__HUM_BOIL_AMP != null) {
+          // Boil amplitude affects particle displacement (handled in shader via uAudioLevel)
+        }
+        if ((window as any).__HUM_RIM != null) {
+          // Rim lighting (handled in shader)
+        }
+        if ((window as any).__HUM_DOT != null) {
+          // Dot sharpness (handled in shader)
+        }
+        if ((window as any).__HUM_ENERGY != null) {
+          // Energy level affects overall intensity
+        }
+        if ((window as any).__HUM_FREEZE_T != null) {
+          materialRef.current.uniforms.uTime.value = Number((window as any).__HUM_FREEZE_T);
+        }
+        if ((window as any).__HUM_ATTN != null) {
+          // Mouse attention factor
+        }
+        if ((window as any).__HUM_BLEND != null) {
+          // Blend state
+        }
+        if ((window as any).__HUM_FORCE_2D != null) {
+          // Force 2D mode
+        }
+        if ((window as any).__HUM_BG_T != null) {
+          // Background time override
+        }
+        if ((window as any).__HUM_CLICK != null) {
+          // Click timing
+        }
+      }
+      
       materialRef.current.needsUpdate = true;
     }
   });

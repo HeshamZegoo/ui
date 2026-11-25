@@ -22,7 +22,7 @@ import {
 } from './constants';
 import './App.css';
 
-// Parse URL query parameters
+// Parse URL query parameters and set window.__HUM_* variables (matches original)
 function parseQueryParams(): {
   skipAssembly: boolean;
   noBackground: boolean;
@@ -30,6 +30,35 @@ function parseQueryParams(): {
   autoStart: boolean;
 } {
   const params = new URLSearchParams(window.location.search);
+  
+  // Set window variables matching original implementation
+  if (params.get(QUERY_PARAMS.SKIP_ASSEMBLY) === 'true') {
+    (window as any).__HUM_SKIP_ASSEMBLY = true;
+  }
+  if (params.get(QUERY_PARAMS.NO_BG) === 'true') {
+    (window as any).__HUM_NO_BG = true;
+  }
+  const asmOff = params.get(QUERY_PARAMS.ASM_OFF);
+  if (asmOff != null && asmOff !== '') {
+    (window as any).__HUM_ASM_OFF = Number(asmOff);
+  }
+  const asmEl = params.get(QUERY_PARAMS.ASM_EL);
+  if (asmEl != null && asmEl !== '') {
+    (window as any).__HUM_ASM_EL = Number(asmEl);
+  }
+  const surge = params.get(QUERY_PARAMS.SURGE);
+  if (surge != null && surge !== '') {
+    (window as any).__HUM_SURGE = Number(surge);
+  }
+  const bgRest = params.get(QUERY_PARAMS.BG_REST);
+  if (bgRest != null && bgRest !== '') {
+    (window as any).__HUM_BG_REST = Number(bgRest);
+  }
+  const bgPulse = params.get(QUERY_PARAMS.BG_PULSE);
+  if (bgPulse != null && bgPulse !== '') {
+    (window as any).__HUM_BG_PULSE = Number(bgPulse);
+  }
+
   return {
     skipAssembly: params.get(QUERY_PARAMS.SKIP_ASSEMBLY) === 'true',
     noBackground: params.get(QUERY_PARAMS.NO_BG) === 'true',
@@ -44,7 +73,6 @@ function App() {
   const [currentState, setCurrentState] = useState<FaceState>(FACE_STATES.IDLE);
   const [isMicrophoneActive, setIsMicrophoneActive] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-  const [audioContextReady, setAudioContextReady] = useState(false);
   const assemblyPlayedRef = useRef(false);
   const initialStateRef = useRef<FaceState>(FACE_STATES.IDLE);
   const skipAssemblyRef = useRef(false);
@@ -54,10 +82,8 @@ function App() {
     const init = async () => {
       try {
         await initAudio();
-        setAudioContextReady(true);
       } catch (error) {
         console.warn('Audio initialization failed:', error);
-        setAudioContextReady(false);
       }
       setIsLoading(false);
     };
@@ -97,7 +123,7 @@ function App() {
     
     setIsActive(true);
     setCurrentState(FACE_STATES.IDLE);
-  }, [isSoundEnabled]);
+  }, [isSoundEnabled, isActive]);
 
   // Handle state change
   const handleStateChange = useCallback((state: FaceState) => {
@@ -174,18 +200,12 @@ function App() {
           <button 
             className="entry-button"
             onClick={handleEnter}
-            disabled={!audioContextReady}
           >
-            {audioContextReady ? 'ENTER' : 'INITIALIZING AUDIO...'}
+            ENTER
           </button>
           <p className="entry-hint">
             the click opens the audio - the birth has a sound
           </p>
-          {!audioContextReady && (
-            <p className="entry-warning">
-              Audio context unavailable - experience will be silent
-            </p>
-          )}
         </div>
       </div>
     );

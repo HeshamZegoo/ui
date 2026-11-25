@@ -264,7 +264,7 @@ export const ControlPanel = ({
           fontFamily: '"Share Tech Mono", monospace',
         }}
       >
-        🎤 MIC {isMicrophoneActive ? 'ON' : 'OFF'}
+        🎙 MIC {isMicrophoneActive ? 'ON' : 'OFF'}
       </button>
       
       <button
@@ -281,7 +281,7 @@ export const ControlPanel = ({
           fontFamily: '"Share Tech Mono", monospace',
         }}
       >
-        ⟳ REPLAY
+        ↻ REPLAY
       </button>
       
       <button
@@ -297,7 +297,7 @@ export const ControlPanel = ({
           fontFamily: '"Share Tech Mono", monospace',
         }}
       >
-        🔊 SOUND {isSoundEnabled ? 'ON' : 'OFF'}
+        ♪ SOUND {isSoundEnabled ? 'ON' : 'OFF'}
       </button>
     </div>
   );
