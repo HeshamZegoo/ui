@@ -1,0 +1,208 @@
+/* Apex Humanoid - Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+:root {
+  --font-ui: "Share Tech Mono", monospace;
+  --accent: #22d3ee;
+  --accent-dim: #9fd8e8;
+  --accent-muted: #4a6b75;
+  --mic-color: #f5a623;
+  --bg: #000;
+  --ui-bg: #0a0f12;
+  --ui-border: rgba(34, 211, 238, 0.33);
+  --text-primary: #22d3ee;
+  --text-secondary: #9fd8e8;
+  --text-muted: #4a6b75;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: var(--font-ui);
+  color: var(--text-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  font-family: var(--font-ui);
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--accent-muted);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 24px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: var(--accent);
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.loading-subtext {
+  color: var(--text-muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* Entry Screen */
+.entry-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  z-index: 150;
+  font-family: var(--font-ui);
+}
+
+.entry-content {
+  text-align: center;
+  padding: 24px;
+}
+
+.entry-title {
+  color: var(--accent);
+  font-size: 22px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 400;
+}
+
+.entry-subtitle {
+  color: var(--text-secondary);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  margin-bottom: 28px;
+  font-weight: 400;
+}
+
+.entry-button {
+  padding: 12px 34px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  border-radius: 10px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 24px rgba(34, 211, 238, 0.13);
+}
+
+.entry-button:hover:not(:disabled) {
+  background: rgba(34, 211, 238, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 32px rgba(34, 211, 238, 0.3);
+}
+
+.entry-button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.entry-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.entry-hint {
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-top: 18px;
+}
+
+.entry-warning {
+  color: var(--mic-color);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  margin-top: 12px;
+}
+
+/* App Container */
+.app-container {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+}
+
+/* Canvas is rendered by HumanoidScene */
+
+/* Control Panel Buttons */
+button {
+  font-family: var(--font-ui);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+    border-top-color: var(--accent-muted);
+  }
+  
+  .entry-button {
+    transition: none;
+  }
+}
+
+/* Scrollbar hiding */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Selection */
+::selection {
+  background: rgba(34, 211, 238, 0.2);
+  color: var(--accent);
+}
