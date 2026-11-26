@@ -227,6 +227,6 @@ void main() {
     pointSize *= 1.0 + uAudioLevel * 0.3;
   }
   
-  gl_PointSize = clamp(pointSize, 0.5, 4.0);
+  gl_PointSize = clamp(pointSize, 1.0, 6.0);
   gl_Position = projectionMatrix * mvPosition;
 }

@@ -419,8 +419,8 @@ export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceP
     const d = sdFace(p);
 
     // Keep points inside or near the surface to fill the face volume
-    // d <= 0 means inside the face, d > 0.05 means too far outside
-    if (d > 0.05) continue;
+    // d <= 0 means inside the face, d > 0.08 means too far outside
+    if (d > 0.08) continue;
 
     // Normal via finite differences
     const normal = calcNormal(p);

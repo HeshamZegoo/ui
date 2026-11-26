@@ -1,6 +1,6 @@
 // Apex Humanoid Constants
 
-export const PARTICLE_COUNT = 30000; // Number of particles for the face
+export const PARTICLE_COUNT = 60000; // Number of particles for the face
 export const BG_PARTICLE_COUNT = 10000; // Number of background particles
 
 export const FACE_STATES = {
