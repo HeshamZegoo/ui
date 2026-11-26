@@ -405,7 +405,7 @@ export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceP
 
   let generated = 0;
   let attempts = 0;
-  const maxAttempts = count * 20; // Safety limit to avoid infinite loop
+  const maxAttempts = count * 50; // Increased safety limit
 
   while (generated < count && attempts < maxAttempts) {
     attempts++;
@@ -419,6 +419,7 @@ export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceP
     const d = sdFace(p);
 
     // Keep points inside or near the surface to fill the face volume
+    // d <= 0 means inside the face, d > 0.05 means too far outside
     if (d > 0.05) continue;
 
     // Normal via finite differences
@@ -454,6 +455,14 @@ export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceP
     colorsArray[generated * 3 + 2] = color.b;
 
     generated++;
+  }
+
+  console.log(`[faceGeometry] Rejection sampling generated ${generated}/${count} points after ${attempts} attempts`);
+
+  // If rejection sampling produced too few points, use full generator as fallback
+  if (generated < count * 0.5) {
+    console.warn(`[faceGeometry] Rejection sampling too sparse (${generated}/${count}), falling back to full generator`);
+    return generateFaceParticles(count);
   }
 
   // If we didn't get enough points (rare), fill remainder with fallback spherical sampling
