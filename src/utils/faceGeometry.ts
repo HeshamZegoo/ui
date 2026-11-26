@@ -394,7 +394,7 @@ export function generateFaceParticles(count: number = PARTICLE_COUNT): FaceParti
   };
 }
 
-// Simpler fallback generation for faster startup
+// Fast generation using rejection sampling on face surface for even full-face distribution
 export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceParticleData {
   const positionsArray = new Float32Array(count * 3);
   const normalsArray = new Float32Array(count * 3);
@@ -407,84 +407,92 @@ export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceP
   const warm = new THREE.Color(0xf5a623);
   const white = new THREE.Color(0xffffff);
 
-  for (let i = 0; i < count; i++) {
-    // Spherical coordinates mapped to face shape
-    const featureRoll = Math.random();
+  let generated = 0;
+  let attempts = 0;
+  const maxAttempts = count * 20; // Safety limit to avoid infinite loop
+
+  while (generated < count && attempts < maxAttempts) {
+    attempts++;
     
-    let theta, phi;
-    
-    if (featureRoll < 0.15) { // Eyes
-      theta = Math.PI * 0.3 + (Math.random() - 0.5) * 0.4;
-      phi = (Math.random() < 0.5 ? -1 : 1) * (0.4 + Math.random() * 0.2);
-    } else if (featureRoll < 0.25) { // Nose
-      theta = Math.PI * 0.5 + (Math.random() - 0.5) * 0.3;
-      phi = (Math.random() - 0.5) * 0.3;
-    } else if (featureRoll < 0.35) { // Mouth
-      theta = Math.PI * 0.75 + (Math.random() - 0.5) * 0.3;
-      phi = (Math.random() - 0.5) * 0.4;
-    } else if (featureRoll < 0.5) { // Forehead
-      theta = Math.PI * 0.1 + Math.random() * 0.2;
-      phi = (Math.random() - 0.5) * 1.0;
-    } else { // General face
-      theta = Math.PI * (0.2 + Math.random() * 0.6);
-      phi = (Math.random() - 0.5) * 1.5;
-    }
+    // Sample uniformly in face bounding box
+    const px = (Math.random() - 0.5) * 2 * FACE_WIDTH;
+    const py = (Math.random() - 0.5) * 2 * FACE_HEIGHT;
+    const pz = (Math.random() - 0.5) * 2 * FACE_DEPTH * 0.5;
 
-    const r = 1.0 + (Math.random() - 0.5) * 0.1;
-    const px = r * Math.sin(theta) * Math.cos(phi) * FACE_WIDTH;
-    const py = r * Math.cos(theta) * FACE_HEIGHT;
-    const pz = r * Math.sin(theta) * Math.sin(phi) * FACE_DEPTH * 0.5;
+    const p = new THREE.Vector3(px, py, pz);
+    const d = sdFace(p);
 
-    positionsArray[i * 3] = px;
-    positionsArray[i * 3 + 1] = py;
-    positionsArray[i * 3 + 2] = pz;
+    // Keep points near the surface (within threshold)
+    if (Math.abs(d) > 0.03) continue;
 
-    // Normal (approximate)
-    const normal = new THREE.Vector3(px, py, pz).normalize();
-    normalsArray[i * 3] = normal.x;
-    normalsArray[i * 3 + 1] = normal.y;
-    normalsArray[i * 3 + 2] = normal.z;
+    // Normal via finite differences
+    const normal = calcNormal(p);
 
-    // UV
+    // UV from planar projection
     const uvX = (px / FACE_WIDTH) * 0.5 + 0.5;
     const uvY = 1.0 - ((py / FACE_HEIGHT) * 0.5 + 0.5);
-    uvsArray[i * 2] = THREE.MathUtils.clamp(uvX, 0.0, 1.0);
-    uvsArray[i * 2 + 1] = THREE.MathUtils.clamp(uvY, 0.0, 1.0);
-
-    particleIdsArray[i] = i;
-    sizesArray[i] = 0.8 + Math.random() * 0.4;
+    const uv = new THREE.Vector2(
+      THREE.MathUtils.clamp(uvX, 0.0, 1.0),
+      THREE.MathUtils.clamp(uvY, 0.0, 1.0)
+    );
 
     // Color based on region
-    const x = uvX - 0.5;
-    const y = uvY;
-    
-    const eyeL = Math.hypot(x + EYE_SEPARATION / FACE_WIDTH, y - 0.25);
-    const eyeR = Math.hypot(x - EYE_SEPARATION / FACE_WIDTH, y - 0.25);
-    const eyeRadius = EYE_SIZE / Math.max(FACE_WIDTH, FACE_HEIGHT);
-    
-    const noseDist = Math.hypot(x, y - 0.55);
-    const noseRadius = NOSE_SIZE / Math.max(FACE_WIDTH, FACE_HEIGHT);
-    
-    const mouthX = x / (MOUTH_WIDTH / FACE_WIDTH);
-    const mouthY = (y - 0.8) / (MOUTH_HEIGHT / FACE_HEIGHT);
-    const mouthDist = Math.hypot(mouthX, mouthY);
-    
-    let color: THREE.Color;
-    if (eyeL < eyeRadius || eyeR < eyeRadius) {
-      color = accent.clone().lerp(white, 0.6);
-    } else if (noseDist < noseRadius) {
-      color = accent.clone().lerp(warm, 0.3);
-    } else if (mouthDist < 1.0) {
-      color = accent.clone().lerp(warm, 0.5);
-    } else if (y < 0.2) {
-      color = accent.clone().multiplyScalar(0.7);
-    } else {
-      color = accent.clone();
-    }
+    const color = getParticleColor(uv);
 
-    colorsArray[i * 3] = color.r;
-    colorsArray[i * 3 + 1] = color.g;
-    colorsArray[i * 3 + 2] = color.b;
+    positionsArray[generated * 3] = px;
+    positionsArray[generated * 3 + 1] = py;
+    positionsArray[generated * 3 + 2] = pz;
+
+    normalsArray[generated * 3] = normal.x;
+    normalsArray[generated * 3 + 1] = normal.y;
+    normalsArray[generated * 3 + 2] = normal.z;
+
+    uvsArray[generated * 2] = uv.x;
+    uvsArray[generated * 2 + 1] = uv.y;
+
+    particleIdsArray[generated] = generated;
+    sizesArray[generated] = 0.8 + Math.random() * 0.4;
+
+    colorsArray[generated * 3] = color.r;
+    colorsArray[generated * 3 + 1] = color.g;
+    colorsArray[generated * 3 + 2] = color.b;
+
+    generated++;
+  }
+
+  // If we didn't get enough points (rare), fill remainder with fallback spherical sampling
+  if (generated < count) {
+    for (let i = generated; i < count; i++) {
+      const theta = Math.PI * (0.15 + Math.random() * 0.7);
+      const phi = (Math.random() - 0.5) * 1.6;
+      const r = 1.0 + (Math.random() - 0.5) * 0.05;
+      const px = r * Math.sin(theta) * Math.cos(phi) * FACE_WIDTH;
+      const py = r * Math.cos(theta) * FACE_HEIGHT;
+      const pz = r * Math.sin(theta) * Math.sin(phi) * FACE_DEPTH * 0.5;
+
+      positionsArray[i * 3] = px;
+      positionsArray[i * 3 + 1] = py;
+      positionsArray[i * 3 + 2] = pz;
+
+      const normal = new THREE.Vector3(px, py, pz).normalize();
+      normalsArray[i * 3] = normal.x;
+      normalsArray[i * 3 + 1] = normal.y;
+      normalsArray[i * 3 + 2] = normal.z;
+
+      const uvX = (px / FACE_WIDTH) * 0.5 + 0.5;
+      const uvY = 1.0 - ((py / FACE_HEIGHT) * 0.5 + 0.5);
+      uvsArray[i * 2] = THREE.MathUtils.clamp(uvX, 0.0, 1.0);
+      uvsArray[i * 2 + 1] = THREE.MathUtils.clamp(uvY, 0.0, 1.0);
+
+      particleIdsArray[i] = i;
+      sizesArray[i] = 0.8 + Math.random() * 0.4;
+
+      const uv = new THREE.Vector2(uvX, uvY);
+      const color = getParticleColor(uv);
+      colorsArray[i * 3] = color.r;
+      colorsArray[i * 3 + 1] = color.g;
+      colorsArray[i * 3 + 2] = color.b;
+    }
   }
 
   return {

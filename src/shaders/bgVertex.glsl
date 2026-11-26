@@ -118,14 +118,14 @@ void main() {
   
   vAlpha = alpha;
   
-  // Particle size
-  float size = aSz * uSizeK * uPixelRatio * (50.0 + 50.0 * alpha);
+  // Particle size (clamped to avoid huge blobs)
+  float size = aSz * uSizeK * uPixelRatio * (1.0 + 2.0 * alpha);
   vSize = size;
   
   // 3D position for depth sorting
   vec3 worldPos = vec3(pos.x, pos.y, -1.0 - hash(aPh) * 2.0);
   vec4 mvPosition = modelViewMatrix * vec4(worldPos, 1.0);
   
-  gl_PointSize = max(size * (100.0 / -mvPosition.z), 1.0);
+  gl_PointSize = clamp(size * (12.0 / -mvPosition.z), 0.5, 3.0);
   gl_Position = projectionMatrix * mvPosition;
 }

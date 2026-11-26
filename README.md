@@ -4,7 +4,7 @@ A pixel-perfect recreation of the [Apex Humanoid](https://apex-humanoid.vercel.a
 
 ## 🎯 Features
 
-- **200k+ GPU-based particles** forming a detailed humanoid face
+- **30k GPU-based particles** forming a detailed humanoid face (configurable, original used 200k+)
 - **SDF-based face geometry** with stratified region sampling (eyes, nose, mouth, forehead, cheeks, jaw)
 - **Custom GLSL shaders** for vertex/fragment particle rendering
 - **Animations:**

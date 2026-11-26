@@ -215,9 +215,9 @@ void main() {
   vPosition = finalPos;
   vNormal = rotatedNormal;
   
-  // Calculate particle size with perspective
+  // Calculate particle size with perspective (clamped to avoid huge blobs)
   vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
-  float pointSize = aSize * uSizeK * uPixelRatio * (100.0 / -mvPosition.z);
+  float pointSize = aSize * uSizeK * uPixelRatio * (12.0 / -mvPosition.z);
   
   // Size variation during assembly
   pointSize *= mix(0.1, 1.0, assemblyEased);
@@ -227,6 +227,6 @@ void main() {
     pointSize *= 1.0 + uAudioLevel * 0.3;
   }
   
-  gl_PointSize = max(pointSize, 1.0);
+  gl_PointSize = clamp(pointSize, 0.5, 4.0);
   gl_Position = projectionMatrix * mvPosition;
 }
