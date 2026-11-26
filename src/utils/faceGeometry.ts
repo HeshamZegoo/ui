@@ -403,10 +403,6 @@ export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceP
   const sizesArray = new Float32Array(count);
   const colorsArray = new Float32Array(count * 3);
 
-  const accent = new THREE.Color(0x22d3ee);
-  const warm = new THREE.Color(0xf5a623);
-  const white = new THREE.Color(0xffffff);
-
   let generated = 0;
   let attempts = 0;
   const maxAttempts = count * 20; // Safety limit to avoid infinite loop
@@ -422,8 +418,8 @@ export function generateFaceParticlesFast(count: number = PARTICLE_COUNT): FaceP
     const p = new THREE.Vector3(px, py, pz);
     const d = sdFace(p);
 
-    // Keep points near the surface (within threshold)
-    if (Math.abs(d) > 0.03) continue;
+    // Keep points inside or near the surface to fill the face volume
+    if (d > 0.05) continue;
 
     // Normal via finite differences
     const normal = calcNormal(p);
